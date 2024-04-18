@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
-constexpr int num_motors_ps = 2;
-constexpr int m_pin[][2] = {{1, 2}, {3, 4}, {5,6}, {7,8}};
+constexpr int num_motors_ps = 1;
+constexpr int m_pin[2 * num_motors_ps][2] = {{2,3},{4,5}};
 
 constexpr int calibration_LED_pin = 13;
 
