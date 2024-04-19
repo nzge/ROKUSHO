@@ -27,7 +27,7 @@ T clamp(T value, T minVal, T maxVal) {
 
 void setup() {
 
-
+  Serial.begin(9600);
 
   digitalWrite(calibration_LED_pin, HIGH);
   for (uint8_t i = 0; i < calibration_iterations; i++)
@@ -42,7 +42,7 @@ void setup() {
 void loop() {
 
   int left_speed = clamp(base_speed, -max_speed, max_speed);
-  int right_speed = clamp(base_speed, -max_speed, max_speed);
+  int right_speed = clamp(-base_speed, -max_speed, max_speed);
 
   motors[0].set_speed(left_speed);
   motors[1].set_speed(right_speed);
