@@ -1,6 +1,7 @@
 #include <Arduino.h>
 
 #include <motor.h>
+#include <servo.h>
 #include <constants.h>
 
 #include <QTRSensors.h>
@@ -12,6 +13,9 @@ Motor motors[] = {Motor(m_pin[0][0], m_pin[0][1]),
 Motor(m_pin[1][0], m_pin[1][1]), 
 Motor(m_pin[2][0], m_pin[2][1]), 
 Motor(m_pin[3][0], m_pin[3][1])};
+
+Servo bar_servo = Servo(s_pin[0][0], s_pin[0][1]); 
+Servo claw_servo = Servo(s_pin[1][0], s_pin[1][1]);
 
 bool picked_up = false;
 
@@ -120,29 +124,94 @@ void line_follow_until_junction(Controller controller) {
   }
 }
 
+// void setup() {
+//   Serial.begin(9600);
+//   lf.setTypeAnalog();
+//   lf.setSensorPins(line_follower_pins, num_line_sensors);
 
+//   digitalWrite(calibration_LED_pin, HIGH);
+//   for (uint8_t i = 0; i < calibration_iterations; i++)
+//   {
+//     lf.calibrate();
+//     delay(20);
+//     Serial.println(i);
+//   }
+//   digitalWrite(calibration_LED_pin, LOW);
+// }
+
+// void loop() {
+//   line_follow_until_junction(base_controller);
+// }
+
+
+#define LIMIT_SWITCH_PIN 2 
 
 void setup() {
+  
+  bar_servo.set_angle(bar_servoPos);
+  claw_servo.set_angle(claw_servoPos);
+
   Serial.begin(9600);
-  lf.setTypeAnalog();
-  lf.setSensorPins(line_follower_pins, num_line_sensors);
+  pinMode(LIMIT_SWITCH_PIN, INPUT_PULLUP);
 
-
-  digitalWrite(calibration_LED_pin, HIGH);
-  for (uint8_t i = 0; i < calibration_iterations; i++)
-  {
-    lf.calibrate();
-    delay(20);
-    Serial.println(i);
-  }
-  digitalWrite(calibration_LED_pin, LOW);
 }
 
 
+int SWEEP_DELAY = 10;
+
+bool switchPressed = false; // Flag to track switch state change
+
+int bar_traj[3]= {90, 90, 180}; 
+int bar_servoPos = 0;
+
+int claw_traj[4]= {90, 90, 90, 118}; 
+int claw_servoPos = 0;
 
 
 void loop() {
-  line_follow_until_junction(base_controller);
+  
+  int limitSwitchState = digitalRead(LIMIT_SWITCH_PIN);
+
+  // Check if the switch is pressed and the flag is not set
+  if (limitSwitchState == LOW && !switchPressed) {
+    
+    unsigned long time_prev0 = millis();
+
+    //backup from wall
+    while(millis() - time_prev0>=100) {
+      motors[0].set_speed(-base_speed);
+      motors[1].set_speed(-base_speed);
+      motors[2].set_speed(base_speed);
+      motors[3].set_speed(base_speed);
+    }
+    switchPressed = true;
+  }
+
+  if (limitSwitchState == HIGH && switchPressed) {
+    
+    //bring bar towards patty
+    for (int angle = bar_traj[1]; angle <= bar_traj[2]; angle++) {
+      bar_servo.set_angle(angle);   // Set servo angle
+      delay(SWEEP_DELAY);     // Wait before changing angle
+    }
+    
+    //grab patty
+    for (int angle = claw_traj[1]; angle <= claw_traj[2]; angle++) {
+      claw_servo.set_angle(angle);   // Set servo angle
+      delay(SWEEP_DELAY);     // Wait before changing angle
+    }
+
+    //bring bar back
+    for (int angle = bar_traj[2]; angle >= bar_traj[1]; angle--) {
+      bar_servo.set_angle(angle);   // Set servo angle
+      delay(SWEEP_DELAY);     // Wait before changing angle
+    }
+
+    //release patty
+    for (int angle = claw_traj[2]; angle >= claw_traj[1]; angle--) {
+      bar_servo.set_angle(angle);   // Set servo angle
+      delay(SWEEP_DELAY);     // Wait before changing angle
+    }
+    
+  }
 }
-
-

@@ -3,6 +3,9 @@
 constexpr int num_motors_ps = 2;
 constexpr int m_pin[][2] = {{2,3}, {4,5}, {6,7}, {8,9}};
 
+constexpr int num_servos_ps = 2;
+constexpr int s_pin[][2] = {{12,A0}, {13,-1}};
+
 constexpr int calibration_LED_pin = 13;
 
 constexpr const int num_line_sensors = 13;

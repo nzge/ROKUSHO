@@ -4,6 +4,7 @@
 class Servo {
     public:
         Servo(int pwm_pin, int angle_pin);
+        Servo(int pwm_pin);
         void set_angle(int angle);
         float measure_angle();
         float get_set_angle();
