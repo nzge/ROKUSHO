@@ -168,6 +168,72 @@ int claw_traj[4]= {90, 90, 90, 118};
 int claw_servoPos = 0;
 
 
+void grabDisc(){
+   
+  //grab patty
+  for (int angle = claw_traj[1]; angle <= claw_traj[2]; angle++) {
+    claw_servo.set_angle(angle);   // Set servo angle
+    delay(SWEEP_DELAY);     // Wait before changing angle
+  }
+
+  delay(500);
+
+  //bring bar towards platform
+  for (int angle = bar_traj[1]; angle <= bar_traj[2]; angle++) {
+    bar_servo.set_angle(angle);   // Set servo angle
+    delay(SWEEP_DELAY);     // Wait before changing angle
+  }
+  
+  delay(500); 
+
+  //release patty
+  for (int angle = claw_traj[2]; angle >= claw_traj[1]; angle--) {
+    bar_servo.set_angle(angle);   // Set servo angle
+    delay(SWEEP_DELAY);     // Wait before changing angle
+  }
+
+  delay(500);
+
+  //bring bar back
+  for (int angle = bar_traj[2]; angle >= bar_traj[1]; angle--) {
+    bar_servo.set_angle(angle);   // Set servo angle
+    delay(SWEEP_DELAY);     // Wait before changing angle
+  }
+
+}
+
+void dropoffDisc(){
+    //bring bar towards patty
+    for (int angle = bar_traj[1]; angle <= bar_traj[2]; angle++) {
+      bar_servo.set_angle(angle);   // Set servo angle
+      delay(SWEEP_DELAY);     // Wait before changing angle
+    }
+    
+    delay(500);
+
+    //grab patty
+    for (int angle = claw_traj[1]; angle <= claw_traj[2]; angle++) {
+      claw_servo.set_angle(angle);   // Set servo angle
+      delay(SWEEP_DELAY);     // Wait before changing angle
+    }
+
+    delay(500);
+
+    //bring bar back
+    for (int angle = bar_traj[2]; angle >= bar_traj[1]; angle--) {
+      bar_servo.set_angle(angle);   // Set servo angle
+      delay(SWEEP_DELAY);     // Wait before changing angle
+    }
+    
+    delay(500);
+
+    //release patty
+    for (int angle = claw_traj[2]; angle >= claw_traj[1]; angle--) {
+      bar_servo.set_angle(angle);   // Set servo angle
+      delay(SWEEP_DELAY);     // Wait before changing angle
+    }
+}
+
 void loop() {
   
   int limitSwitchState = digitalRead(LIMIT_SWITCH_PIN);
@@ -188,30 +254,8 @@ void loop() {
   }
 
   if (limitSwitchState == HIGH && switchPressed) {
-    
-    //bring bar towards patty
-    for (int angle = bar_traj[1]; angle <= bar_traj[2]; angle++) {
-      bar_servo.set_angle(angle);   // Set servo angle
-      delay(SWEEP_DELAY);     // Wait before changing angle
-    }
-    
-    //grab patty
-    for (int angle = claw_traj[1]; angle <= claw_traj[2]; angle++) {
-      claw_servo.set_angle(angle);   // Set servo angle
-      delay(SWEEP_DELAY);     // Wait before changing angle
-    }
 
-    //bring bar back
-    for (int angle = bar_traj[2]; angle >= bar_traj[1]; angle--) {
-      bar_servo.set_angle(angle);   // Set servo angle
-      delay(SWEEP_DELAY);     // Wait before changing angle
-    }
-
-    //release patty
-    for (int angle = claw_traj[2]; angle >= claw_traj[1]; angle--) {
-      bar_servo.set_angle(angle);   // Set servo angle
-      delay(SWEEP_DELAY);     // Wait before changing angle
-    }
+    grabDisc();
     
   }
 }
