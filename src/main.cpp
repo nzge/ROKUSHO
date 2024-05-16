@@ -256,6 +256,7 @@ void loop() {
   if (limitSwitchState == HIGH && switchPressed) {
 
     grabDisc();
+    dropoffDisc();
     
   }
 }
