@@ -16,7 +16,7 @@ constexpr float max_speed = 10;
 constexpr float base_speed = 8;
 constexpr float turn_speed = 1;
 constexpr float Kp = 0.02;
-constexpr float Kd = 0.001;
+constexpr float Kd = 0.005;
 
 constexpr int calibration_iterations = 100;
 #endif

@@ -18,6 +18,10 @@ Servo bar_servo = Servo(s_pin[0][0], s_pin[0][1]);
 Servo claw_servo = Servo(s_pin[1][0], s_pin[1][1]);
 
 bool picked_up = false;
+int turning_cycles = 0;
+int avoid_cycles = 0;
+int dropoff_location = 0;
+int dropoff_target = 2;
 
 // Simple clamping function
 template <typename T>
@@ -95,23 +99,62 @@ void line_follow_until_junction(Controller controller) {
     uint16_t sensors[num_line_sensors];
     int16_t position = lf.readLineBlack(sensors);
     
-    // If all sensors see very low reflectance, take some appropriate action
-    // for this situation.
-    bool allSensorsLowReflectance = true;
+    bool allLeftLowReflectance = true;
+    bool allRightLowReflectance = true;
+
     for (int i = 0; i < num_line_sensors; i++) {
-      if (sensors[i] > 750) {
-        allSensorsLowReflectance = false;
-        break;
+      if (sensors[i] < 100) {
+        
+        if (i < num_line_sensors / 2) {
+          allRightLowReflectance = false;
+        } else {
+          allLeftLowReflectance = false;
+        }
       }
     }
-    
-    if (allSensorsLowReflectance) return;
 
     int error = position - line_center_position;
     float controller_output = controller.update(error);
 
-    int left_speed = clamp(base_speed + controller_output, -max_speed, max_speed);
-    int right_speed = clamp(base_speed - controller_output, -max_speed, max_speed);
+    float fwd_speed = base_speed;
+    if (allLeftLowReflectance && !allRightLowReflectance) {
+      turning_cycles = 50;
+    }
+    if (turning_cycles > 0) {
+      fwd_speed = 4;
+      turning_cycles--;
+    }
+
+    // if (allRightLowReflectance && !allLeftLowReflectance) {
+    //   dropoff_location++;
+    //   if (dropoff_location == dropoff_target) {
+    //     controller_output = 30;
+    //     int left_speed = clamp(fwd_speed + controller_output, -max_speed, max_speed);
+    //     int right_speed = clamp(fwd_speed - controller_output, -max_speed, max_speed);
+
+    //     motors[0].set_speed(-left_speed);
+    //     motors[1].set_speed(-left_speed);
+    //     motors[2].set_speed(-right_speed);
+    //     motors[3].set_speed(right_speed);
+    //     delay(1000);
+    //     motors[0].set_speed(0);
+    //     motors[1].set_speed(0);
+    //     motors[2].set_speed(0);
+    //     motors[3].set_speed(0);
+    //     delay(1e1000);
+    //   }
+    //   else {
+    //     avoid_cycles = 30;
+    //   }
+    // }
+
+    // if (avoid_cycles > 0) {
+    //   controller_output = -3;
+    //   avoid_cycles--;
+    // }
+
+    int left_speed = clamp(fwd_speed + controller_output, -max_speed, max_speed);
+    int right_speed = clamp(fwd_speed - controller_output, -max_speed, max_speed);
 
     motors[0].set_speed(-left_speed);
     motors[1].set_speed(-left_speed);
